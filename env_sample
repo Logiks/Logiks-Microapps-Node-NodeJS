@@ -1,1 +1,4 @@
 TRANSPORTER=redis://127.0.0.1:6379
+NODE_ID=demo1223
+CLUSTER_TOKEN=super-secret-cluster-token
+PLUGIN_LOG_LEVEL=error
