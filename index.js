@@ -45,8 +45,13 @@ fs.readdirSync('./controllers/').forEach(function(file) {
 });
 
 async function main() {
-    await BOOSTRAP.loadPlugins();
-    await BOOSTRAP.connect();
+    const broker = await BOOSTRAP.start();
+
+    await PLUGINS.activatePlugins(broker);
+    await PLUGINS.loadPlugins(broker);
+    await BASEAPP.connect(broker);
+    
+    await BOOSTRAP.connect(broker);
 }
 
 //starting the application service

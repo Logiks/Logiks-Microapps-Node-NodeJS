@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 zold/
 
+package-lock.json
+plugins/docs/
+plugins/profile/
 
 ecosystem.config.js
 notes.txt
