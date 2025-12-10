@@ -27,7 +27,7 @@ module.exports = {
 
 	start: async function() {
 		const broker = new ServiceBroker({
-			nodeID: process.env.NODE_ID || `remote-worker-${os.hostname()}-${process.pid}`,
+			nodeID: `worker-${process.env.NODE_ID}-${os.hostname()}-${process.pid}`,
 			transporter: process.env.TRANSPORTER || "nats://localhost:4222",
 			namespace: process.env.NAMESPACE || "default",
 

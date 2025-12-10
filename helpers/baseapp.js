@@ -64,6 +64,15 @@ global._helper = async function(helperString, ...args) {
     }
 }
 
+global._appcall = async function(serviceString, ...args) {
+    log_info("CALLING_SERVICE", serviceString);
+
+    return await MAIN_BROKER.call(serviceString, args, {
+            timeout: 5000,
+            retries: 0
+        });
+}
+
 global.listNodes = async function() {
     const nodes = await BASEAPP.getBroker().call("$node.list");
     return nodes.map(n => n.id);
