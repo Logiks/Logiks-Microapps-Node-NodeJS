@@ -47,8 +47,8 @@ fs.readdirSync('./controllers/').forEach(function(file) {
 async function main() {
     const broker = await BOOSTRAP.start();
 
-    await PLUGINS.activatePlugins(broker);
     await PLUGINS.loadPlugins(broker);
+    await PLUGINS.activatePlugins(broker);
     
     BOOSTRAP.connect(broker, async function(connected) {
         if(connected) {

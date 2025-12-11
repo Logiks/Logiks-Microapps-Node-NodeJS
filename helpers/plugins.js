@@ -154,14 +154,14 @@ async function fetchFile(pluginID, folder, file) {
 }
 
 function loadPluginRoutes(broker, pluginName, routeConfig) {
-	if (!broker.getLocalService(pluginName)) {
-		throw new LogiksError(
-			"Plugin With Same Name Already Exists",
-			501,
-			"INVALID_PLUGIN_NAME",
-			pluginName
-		);
-	}
+	// if (!broker.getLocalService(pluginName)) {
+	// 	throw new LogiksError(
+	// 		"Plugin With Same Name Already Exists - "+pluginName,
+	// 		501,
+	// 		"INVALID_PLUGIN_NAME",
+	// 		pluginName
+	// 	);
+	// }
 	
 	const serviceSchema = {
 		name: pluginName,
