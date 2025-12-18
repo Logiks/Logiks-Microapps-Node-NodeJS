@@ -35,7 +35,7 @@ module.exports = {
             global[helperId] = new UniversalAPI(helperId);
         });
 
-        console.log("HELPER_LIST", HELPER_LIST);
+        // console.log("HELPER_LIST", HELPER_LIST);
         
         log_info("CONNECTED_NODES", await listNodes());
     }
