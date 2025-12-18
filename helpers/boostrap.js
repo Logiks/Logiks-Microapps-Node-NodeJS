@@ -87,7 +87,7 @@ module.exports = {
 					broker.logger.info("Worker successfully registered with main broker", payload);
 					break;
 				} catch (err) {
-					console.error("ERROR Registering Application", err);
+					// console.error("ERROR Registering Application", err);
 					broker.logger.warn(
 						`⏳ Main broker not ready yet. Retry ${attempt} in 5s...`,
 						err.message

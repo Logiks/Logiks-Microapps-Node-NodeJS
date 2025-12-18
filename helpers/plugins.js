@@ -27,8 +27,8 @@ module.exports = {
 
         const results = await Promise.all(
             tasks.map(async ({ pluginName, menu }) => {
-            const content = await fetchFile(pluginName, "menus", menu);
-            return [`${pluginName}-${menu}`, content]; // [key, value]
+				const content = await fetchFile(pluginName, "menus", menu);
+				return [`${pluginName}-${menu}`, content]; // [key, value]
             })
         );
 
@@ -234,6 +234,41 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		}
 	}
 
+	serviceSchema.actions["www"] = {
+		rest: {
+			method: "GET",
+			path: "/www"
+		},
+		params: {
+			file: "string",
+			folder: "string",
+		},
+		async handler(ctx) {
+			var ext = ctx.params.file.split(".");
+			ext = ext[ext.length-1];
+
+			if(ctx.params.folder && ctx.params.folder.length>0) {
+				const sourceFile = `plugins/${pluginName}/www/${ctx.params.folder}/${ctx.params.file}`;
+			
+				if(fs.existsSync(sourceFile)) {
+					var sourceData = fs.readFileSync(sourceFile, "utf8");
+					return sourceData;
+				} else {
+					return "";
+				}
+			} else {
+				const sourceFile = `plugins/${pluginName}/www/${ctx.params.file}`;
+			
+				if(fs.existsSync(sourceFile)) {
+					var sourceData = fs.readFileSync(sourceFile, "utf8");
+					return sourceData;
+				} else {
+					return "";
+				}
+			}
+		}
+	}
+	
 	broker.createService(serviceSchema);
 }
 
