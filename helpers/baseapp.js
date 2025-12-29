@@ -2,6 +2,7 @@
 
 var MAIN_BROKER = null;
 var HELPER_LIST = [];
+var CONTROLLER_LIST = [];
 
 module.exports = {
 
@@ -18,7 +19,9 @@ module.exports = {
 
         //Availing Local mapping to AppServer Helpers
         const helperList = await _helper("list_helpers");
+        const controllerList = await _controller("list_controllers");
         log_info("HELPERS_ON_SERVER", helperList);
+        log_info("CONTROLLERS_ON_SERVER", controllerList);
 
         if(HELPER_LIST && HELPER_LIST.length>0) {
             _.each(HELPER_LIST, function(helperId, k) {
@@ -28,14 +31,28 @@ module.exports = {
                 } catch(e) {}
             })
         }
+        if(CONTROLLER_LIST && CONTROLLER_LIST.length>0) {
+            _.each(CONTROLLER_LIST, function(controllerId, k) {
+                try {
+                    delete global[controllerId];
+                    delete CONTROLLER_LIST[k];
+                } catch(e) {}
+            })
+        }
         HELPER_LIST = Object.values(HELPER_LIST);
+        CONTROLLER_LIST = Object.values(CONTROLLER_LIST);
 
         _.each(helperList, function(helperId, k) {
             HELPER_LIST.push(helperId);
             global[helperId] = new UniversalAPI(helperId);
         });
+        _.each(controllerList, function(controllerId, k) {
+            CONTROLLER_LIST.push(controllerId);
+            global[controllerId] = new UniversalAPI(controllerId);
+        });
 
         // console.log("HELPER_LIST", HELPER_LIST);
+        // console.log("CONTROLLER_LIST", CONTROLLER_LIST);
         
         log_info("CONNECTED_NODES", await listNodes());
     }
@@ -73,6 +90,26 @@ global._helper = async function(helperString, ...args) {
         return data.data;
     } else {
         console.error("ERROR CALLING HELPERS", data.message);
+        return false;
+    }
+}
+global._controller = async function(cmdString, ...args) {
+    if(!MAIN_BROKER) {
+        throw new Error("MAIN BASE APP is not connected");
+    }
+    var payload = {
+        "cmd": cmdString,
+        "params": args
+    };
+    log_info("CALLING_CONTROLLER", cmdString);
+    const data = await MAIN_BROKER.call("system.controllers", payload, {
+            timeout: 5000,
+            retries: 0
+        });
+    if(data.status=="success") {
+        return data.data;
+    } else {
+        console.error("ERROR CALLING CONTROLLER", data.message);
         return false;
     }
 }
