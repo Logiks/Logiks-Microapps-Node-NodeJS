@@ -274,6 +274,13 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 								const temp = JSON.parse(sourceData);
 								if(temp) sourceData = temp;
 							} catch(e) {console.error(e)}
+							try {
+								const fileScript = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file.replace('.json', '.js')}`;
+								if(fs.existsSync(fileScript)) {
+									var scriptData = fs.readFileSync(fileScript, "utf8");
+									sourceData.script = Buffer.from(scriptData).toString('base64');
+								}
+							} catch(e) {}
 							return sourceData;
 							break;
 						default:
