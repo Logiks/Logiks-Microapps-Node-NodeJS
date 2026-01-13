@@ -58,15 +58,23 @@ module.exports = {
     }
 }
 
+global.log_debug = function(...args) {
+    //console.debug(...args);
+    MAIN_BROKER.logger.debug(...args);
+}
+
 global.log_info = function(...args) {
+    //console.info(...args);
     MAIN_BROKER.logger.info(...args);
 }
 
 global.log_warn = function(...args) {
+    //console.warn(...args);
     MAIN_BROKER.logger.info(...args);
 }
 
 global.log_error = function(...args) {
+    //console.error(...args);
     MAIN_BROKER.logger.info(...args);
 }
 
@@ -89,7 +97,7 @@ global._helper = async function(helperString, ...args) {
     if(data.status=="success") {
         return data.data;
     } else {
-        console.error("ERROR CALLING HELPERS", data.message);
+        log_error("ERROR CALLING HELPERS", data.message);
         return false;
     }
 }
@@ -110,7 +118,7 @@ global._controller = async function(cmdString, ...args) {
     if(data.status=="success") {
         return data.data;
     } else {
-        console.error("ERROR CALLING CONTROLLER", data.message);
+        log_error("ERROR CALLING CONTROLLER", data.message);
         return false;
     }
 }
@@ -126,7 +134,7 @@ global._call = async function(serviceString, ...args) {
         
         return response;
     } catch(err) {
-        console.error(err);
+        log_error(err);
         return null;
     }
 }

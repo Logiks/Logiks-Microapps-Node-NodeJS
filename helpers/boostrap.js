@@ -41,7 +41,7 @@ module.exports = {
 				retries: 3
 			},
 			metadata: {
-				authToken: process.env.CLUSTER_TOKEN,
+				// authToken: process.env.CLUSTER_TOKEN,
 				nodeRole: "worker",
 				color: WORKER_COLOR
 			},
@@ -63,9 +63,11 @@ module.exports = {
 		async function registerWithMainBroker() {
 			const payload = {
 				nodeID: broker.nodeID,
+				token: process.env.CLUSTER_TOKEN,
 				role: "worker",
 				host: os.hostname(),
 				pid: process.pid,
+				pwd: LOGIKS_CONFIG.ROOT_PATH,
 				color: WORKER_COLOR,
 				services: getLocalServiceNames(broker),
 				menus: await PLUGINS.getMenus(),
@@ -87,9 +89,9 @@ module.exports = {
 					broker.logger.info("Worker successfully registered with main broker", payload);
 					break;
 				} catch (err) {
-					// console.error("ERROR Registering Application", err);
+					// log_error("ERROR Registering Application", err);
 					broker.logger.warn(
-						`⏳ Main broker not ready yet. Retry ${attempt} in 5s...`,
+						`⏳ Main broker not ready yet or I am unauthorised due to cluster_token. Retry ${attempt} in 5s...`,
 						err.message
 					);
 					await new Promise(res => setTimeout(res, 5000));
@@ -205,7 +207,7 @@ module.exports = {
 
 			return 0;
 		})
-		.catch(err => console.error(`Error occured! ${err.message}`))
+		.catch(err => log_error(`Error occured! ${err.message}`))
 		.finally(a=> {
 			if(BROKER_CONNECTED) {
 				console.log("\n\x1b[34m%s\x1b[0m", "MicroApp Started & Connected to Cluster");

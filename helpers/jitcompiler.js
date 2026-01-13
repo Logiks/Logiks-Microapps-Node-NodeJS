@@ -10,7 +10,7 @@ module.exports = {
   compileJSX: async function (filePath) {
     const newPath = filePath.replace(".jsx", ".js");
 
-    console.log("compileJSX", filePath, newPath);
+    log_infog("compileJSX", filePath, newPath);
 
     try {
       const jsx = fs.readFileSync(filePath, "utf8");
@@ -22,12 +22,12 @@ module.exports = {
       try {
         fs.writeFileSync(newPath, safeCode, "utf8");
       } catch (e) {
-        // console.log("Error saving JSX->JS File")
+        // log_error("Error saving JSX->JS File", e)
       }
 
       return safeCode;
     } catch (e) {
-      console.error(e);
+      log_error(e);
       return "JIT Compilation Failed for Component";
     }
   },

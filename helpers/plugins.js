@@ -48,8 +48,6 @@ module.exports = {
 
         await loadPluginCatalog(plugins);
 
-        //console.log("plugins", plugins, JSON.stringify(PLUGIN_CATALOG, "\n", 2));
-
         console.log("\n\x1b[32m%s\x1b[0m","Plugin Catalog Initalized and Loaded");
     },
 
@@ -63,14 +61,14 @@ module.exports = {
             //To Activate below files + other services
 			var logiksConfig = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/logiks.json`;
 			if(!fs.existsSync(logiksConfig)) {
-				console.error(`Plugin not loaded ${pluginID} due to missing config - logiks.json`);
+				log_error(`Plugin not loaded ${pluginID} due to missing config - logiks.json`);
 				continue;
 			}
 			try {
 				const tempConfig = JSON.parse(fs.readFileSync(logiksConfig, "utf8"));
 				logiksConfig = tempConfig;
 			} catch(e) {
-				console.error(`Plugin not loaded ${pluginID} due to corrupt config - logiks.json`, e);
+				log_error(`Plugin not loaded ${pluginID} due to corrupt config - logiks.json`, e);
 				continue;
 			}
 			PLUGIN_CONFIGS[pluginID] = {
@@ -87,7 +85,7 @@ module.exports = {
                     APPINDEX.CONTROLLERS[pluginID.toUpperCase()] = require(apiFile);
 					global[pluginID.toUpperCase()] = APPINDEX.CONTROLLERS[pluginID.toUpperCase()];
                 } catch(e) {
-                    console.error(e);
+                    log_error(e);
                 }
             }
 
@@ -98,7 +96,7 @@ module.exports = {
                     const tempConfig = JSON.parse(fs.readFileSync(routeFile, "utf8"));
                     loadPluginRoutes(broker, pluginID, tempConfig);
                 } catch(e) {
-                    console.error(e);
+                    log_error(e);
 
 					loadPluginRoutes(broker, pluginID, {
 						"enabled": true,
@@ -228,7 +226,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			
 			serviceSchema.actions[rPath] = tempConfig;
 
-			// console.info(rPath, path, serviceSchema.actions[rPath]);
+			// log_info(rPath, path, serviceSchema.actions[rPath]);
 		})
 	} else {
 		log_info(`Route Not Enabled for ${pluginID}`);
@@ -247,6 +245,8 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			var ext = ctx.params.file.split(".");
 			ext = ext[ext.length-1];
 			
+			log_info("SOURCE_CALLED", pluginName, ctx.params);
+
 			const FILES = [
 				`plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`,
 				`plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file.replace('.js', ".jsx")}`,
@@ -255,7 +255,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			].filter((value, index, self) => {
 				return self.indexOf(value) === index;
 			});
-			//console.log("FILES", FILES);
+			// log_info("FILES", FILES);
 
 			for(let i=0;i<FILES.length;i++) {
 				if(fs.existsSync(FILES[i])) {
@@ -273,7 +273,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 							try {
 								const temp = JSON.parse(sourceData);
 								if(temp) sourceData = temp;
-							} catch(e) {console.error(e)}
+							} catch(e) {log_error(e)}
 							try {
 								const fileScript = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file.replace('.json', '.js')}`;
 								if(fs.existsSync(fileScript)) {
@@ -313,7 +313,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			// 			const temp = JSON.parse(sourceData);
 			// 			if(temp) sourceData = temp;
 			// 		}
-			// 	} catch(e) {console.error(e)}
+			// 	} catch(e) {log_error(e)}
 			// 	return sourceData;
 			// } else if(fs.existsSync(sourceFile_JSX)) {
 			// 	const jsContent = JITCOMPILER.compileJSX(sourceFile_JSX);
@@ -378,10 +378,10 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			})
 		}
 	} catch (err) {
-		console.error(err)
+		log_error(err)
 	}
 
-	// console.log("PLUGIN", pluginName.toUpperCase(), serviceSchema);
+	// log_info("PLUGIN", pluginName.toUpperCase(), serviceSchema);
 	
 	broker.createService(serviceSchema);
 }
@@ -399,7 +399,7 @@ async function runAction(ctx, config, path, rPath) {
 
 			if(APPINDEX.CONTROLLERS[METHOD[0]]!=null) {
 				if(APPINDEX.CONTROLLERS[METHOD[0]][METHOD[1]]!=null) {
-					// console.log("METHOD FOUND", APPINDEX.CONTROLLERS[METHOD[0]][METHOD[1]]);
+					// log_info("METHOD FOUND", APPINDEX.CONTROLLERS[METHOD[0]][METHOD[1]]);
 
 					METHOD_TYPE = "CONTROLLER";
 					METHOD_PARAMS = APPINDEX.CONTROLLERS[METHOD[0]][METHOD[1]];
@@ -426,8 +426,8 @@ async function runAction(ctx, config, path, rPath) {
 
 	APPINDEX.ROUTES[`${method}::${rPath}`] = config;
 
-	// console.info("runAction>>", METHOD_TYPE, METHOD_PARAMS, path, rPath, method, config, `${method}::${rPath}`, _.extend({}, ctx.params, ctx.query));
-	// console.info("runAction_CTX>>", ctx);
+	// log_info("runAction>>", METHOD_TYPE, METHOD_PARAMS, path, rPath, method, config, `${method}::${rPath}`, _.extend({}, ctx.params, ctx.query));
+	// log_info("runAction_CTX>>", ctx);
 
 	switch(METHOD_TYPE) {
 		case "CONTROLLER":
@@ -461,8 +461,7 @@ function generateController(controllerID, controllerConfig) {
     _.each(controllerConfig, function(confOri, funcKey) {
         newController[funcKey] = function(params, callback) {
             var conf = _.cloneDeep(confOri);
-			log_info("GENERATED_CONTROLLER", funcKey);
-            //console.log("GENERATED_CONTROLLER", funcKey, params, conf, confOri, controllerConfig[funcKey]);
+			log_info("GENERATED_CONTROLLER", funcKey);//, params, conf, confOri, controllerConfig[funcKey]
 
             switch(conf.type) {
                 case "sql":
