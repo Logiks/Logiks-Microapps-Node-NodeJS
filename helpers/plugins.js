@@ -213,14 +213,15 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			const tempConfig = {
 				rest: {
 					method: conf.method.toUpperCase(),
-					path: path,
+					// path: path,
 					// fullPath: `/api/${pluginName}${path}`
+					fullPath: `/api/services/${pluginName}${path}`
 				},
 				async handler(ctx) {
 					return runAction(ctx, conf, path, rPath);
 				}
 			}
-
+			//console.log(">>>", `/api/services/${pluginName}${path}`);
 			if(conf.params) tempConfig.params = conf.params;
 			if(conf.meta) tempConfig.meta = conf.meta;
 			if(conf.cache) tempConfig.cache = conf.cache;
@@ -384,7 +385,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		log_error(err)
 	}
 
-	// log_info("PLUGIN", pluginName.toUpperCase(), serviceSchema);
+	log_info("PLUGIN", pluginName.toUpperCase(), serviceSchema);
 	
 	broker.createService(serviceSchema);
 }
