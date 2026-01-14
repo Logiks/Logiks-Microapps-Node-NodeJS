@@ -53,6 +53,9 @@ async function main() {
     BOOSTRAP.connect(broker, async function(connected) {
         if(connected) {
             //Connected to appserver
+            if(process.env.ENABLE_DBMIGRATION=="true") {
+                BASEAPP.runPluginMigration();
+            }
         } else {
             //Failed to connect to appserver
         }

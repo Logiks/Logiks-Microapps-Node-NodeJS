@@ -46,7 +46,7 @@ module.exports = {
         plugins = JSON.parse(JSON.stringify(plugins));
         plugins = plugins.filter(a=>(a.name[0]!="." && ["z", "x", "temp"].indexOf(a.name.split("_")[0])<0));//.map(a=>{a.name, a.path});
 
-        await loadPluginCatalog(plugins);
+		await loadPluginCatalog(plugins);
 
         console.log("\n\x1b[32m%s\x1b[0m","Plugin Catalog Initalized and Loaded");
     },
@@ -61,6 +61,7 @@ module.exports = {
             //To Activate below files + other services
 			var logiksConfig = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/logiks.json`;
 			if(!fs.existsSync(logiksConfig)) {
+				delete PLUGIN_CATALOG[pluginID];
 				log_error(`Plugin not loaded ${pluginID} due to missing config - logiks.json`);
 				continue;
 			}
@@ -68,6 +69,7 @@ module.exports = {
 				const tempConfig = JSON.parse(fs.readFileSync(logiksConfig, "utf8"));
 				logiksConfig = tempConfig;
 			} catch(e) {
+				delete PLUGIN_CATALOG[pluginID];
 				log_error(`Plugin not loaded ${pluginID} due to corrupt config - logiks.json`, e);
 				continue;
 			}
@@ -78,7 +80,7 @@ module.exports = {
 
 			console.log("\x1b[33m%s\x1b[0m", `Activating Plugin - ${pluginID}`);
 
-            //api
+			//api
             const apiFile = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/api.js`;
             if(fs.existsSync(apiFile)) {
                 try {
@@ -245,6 +247,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			var ext = ctx.params.file.split(".");
 			ext = ext[ext.length-1];
 			
+			// console.log("SOURCE_CALLED", pluginName, ctx.params);
 			log_info("SOURCE_CALLED", pluginName, ctx.params);
 
 			const FILES = [
