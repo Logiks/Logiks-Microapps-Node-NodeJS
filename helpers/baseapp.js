@@ -243,6 +243,6 @@ class UniversalAPI {
     const helperString = `${helperId}.${method}`;
     //return `Handled ${method}`;
     
-    return _helper(helperString, ...args);
+    return _controller(helperString, ...args);
   }
 }
