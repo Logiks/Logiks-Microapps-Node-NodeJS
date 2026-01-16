@@ -246,10 +246,12 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		params: {
 			file: "string",
 			folder: "string",
+			silent: { type: "boolean", optional: true },
 		},
 		async handler(ctx) {
 			// var ext = ctx.params.file.split(".");
 			// ext = ext[ext.length-1];
+			if(ctx.params.silent===null) ctx.params.silent = false;
 			
 			// console.log("SOURCE_CALLED", pluginName, ctx.params);
 			log_info("SOURCE_CALLED", pluginName, ctx.params);
@@ -263,11 +265,13 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 				return self.indexOf(value) === index;
 			});
 			// log_info("FILES", FILES);
+			
 			if(ctx.params.params.rebuild || ctx.params.params.rebuild==="true") {
 				if(fs.existsSync(FILES[1])) FILES[0] = FILES[0]+"_1";
 				if(FILES[2] && fs.existsSync(FILES[3])) FILES[2] = FILES[2]+"_1";
 			}
-			console.log("FILES", FILES, ctx.params);
+			// console.log("FILES", FILES, ctx.params);
+			
 			for(let i=0;i<FILES.length;i++) {
 				if(fs.existsSync(FILES[i])) {
 					//Add Cachng Here if needed
@@ -301,13 +305,15 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 					}
 				}
 			}
-
-			throw new LogiksError(
-				"Invalid Source File",
-				404,
-				"INVALID_SOURCE_FILE",
-				ctx.params
-			);
+			if(ctx.params.silent===false) {
+				throw new LogiksError(
+					"Invalid Source File",
+					404,
+					"INVALID_SOURCE_FILE",
+					ctx.params
+				);
+			}
+			
 
 			// var sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
 			// var sourceFile_JSX = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`.replace('.js', ".jsx");
