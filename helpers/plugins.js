@@ -260,6 +260,10 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 				return self.indexOf(value) === index;
 			});
 			// log_info("FILES", FILES);
+			if(ctx.params.params.rebuild || ctx.params.params.rebuild==="true") {
+				if(fs.existsSync(FILES[1])) FILES[0] = FILES[0]+"_1";
+				if(fs.existsSync(FILES[3])) FILES[2] = FILES[2]+"_1";
+			}
 
 			for(let i=0;i<FILES.length;i++) {
 				if(fs.existsSync(FILES[i])) {
