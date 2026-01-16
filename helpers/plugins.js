@@ -262,9 +262,9 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			// log_info("FILES", FILES);
 			if(ctx.params.params.rebuild || ctx.params.params.rebuild==="true") {
 				if(fs.existsSync(FILES[1])) FILES[0] = FILES[0]+"_1";
-				if(fs.existsSync(FILES[3])) FILES[2] = FILES[2]+"_1";
+				if(FILES[2] && fs.existsSync(FILES[3])) FILES[2] = FILES[2]+"_1";
 			}
-
+			console.log("FILES", FILES, ctx.params);
 			for(let i=0;i<FILES.length;i++) {
 				if(fs.existsSync(FILES[i])) {
 					//Add Cachng Here if needed
