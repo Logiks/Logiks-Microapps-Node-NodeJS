@@ -9,6 +9,7 @@ var PLUGIN_REQUIRE = false;
 
 const PLUGIN_CATALOG = {};
 const PLUGIN_CONFIGS = {};
+var PLUGIN_POLICIES = {};
 const APPINDEX = {
     "CONTROLLERS":{},
     "PROCESSORS": {},
@@ -43,6 +44,10 @@ module.exports = {
 
 	listPlugins: function() {
 		return Object.keys(PLUGIN_CATALOG);
+	},
+
+	listPluginPolicies: function() {
+		return PLUGIN_POLICIES;
 	},
 
 	getPluginRequire: function(pkgId) {
@@ -155,7 +160,7 @@ async function loadPluginCatalog(plugins) {
 			console.log("\n\x1b[31m%s\x1b[0m", `Plugin not loaded ${pluginName} due to corrupt config - logiks.json`, e);
 			continue;
 		}
-
+		PLUGIN_POLICIES[pluginName] = logiksConfig.policies;
 
     	PLUGIN_CATALOG[pluginName] = await catalogPlugins(
       		LOGIKS_CONFIG.ROOT_PATH + `/plugins/${pluginName}/`

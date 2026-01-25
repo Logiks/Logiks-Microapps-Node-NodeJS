@@ -71,7 +71,8 @@ module.exports = {
 				color: WORKER_COLOR,
 				services: getLocalServiceNames(broker),
 				menus: await PLUGINS.getMenus(),
-				plugins: PLUGINS.listPlugins()
+				plugins: PLUGINS.listPlugins(),
+				policies: PLUGINS.listPluginPolicies()
 			};
 
 			let attempt = 0;
