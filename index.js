@@ -48,6 +48,7 @@ async function main() {
     const broker = await BOOSTRAP.start();
 
     await PLUGINS.loadPlugins(broker);
+    await PLUGINS.checkDependencies(broker);
     await PLUGINS.activatePlugins(broker);
     
     BOOSTRAP.connect(broker, async function(connected) {

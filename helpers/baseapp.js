@@ -203,6 +203,10 @@ global._call = async function(serviceString, ...args) {
         return null;
     }
 }
+//Get Plugin Require Environement
+global._require = function(pkgId) {
+    return PLUGINS.getPluginRequire(pkgId);
+}
 
 global.listNodes = async function() {
     const nodes = await BASEAPP.getBroker().call("$node.list");

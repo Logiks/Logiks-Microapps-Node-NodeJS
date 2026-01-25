@@ -1,6 +1,11 @@
 //Plugin Management
 
 const fsPromise = require("fs").promises;
+const Module = require("module");
+const path = require("path");
+const { execSync } = require("child_process");
+
+var PLUGIN_REQUIRE = false;
 
 const PLUGIN_CATALOG = {};
 const PLUGIN_CONFIGS = {};
@@ -40,6 +45,10 @@ module.exports = {
 		return Object.keys(PLUGIN_CATALOG);
 	},
 
+	getPluginRequire: function(pkgId) {
+		return PLUGIN_REQUIRE(pkgId);
+	},
+
     loadPlugins: async function(broker) {
         //Catalog the plugins folder
         var plugins = await fsPromise.readdir(LOGIKS_CONFIG.ROOT_PATH+"/plugins/", { withFileTypes: true });
@@ -48,8 +57,34 @@ module.exports = {
 
 		await loadPluginCatalog(plugins);
 
-        console.log("\n\x1b[32m%s\x1b[0m","Plugin Catalog Initalized and Loaded");
+		console.log("\n\x1b[32m%s\x1b[0m","Plugin Catalog Initalized and Loaded");
     },
+
+	checkDependencies: async function(broker) {
+		if(process.env.ENABLE_PLUGINS_INSTALL_DEPS!=="true") {
+			console.log("\n\x1b[31m%s\x1b[0m", "Plugin Dependecies loading is disabled");
+			return;
+		}
+
+		const plugins = Object.keys(PLUGIN_CATALOG);
+		const deps = {};
+		for(i=0;i<plugins.length;i++) {
+			const pluginID = plugins[i];
+            // const pluginCatalog = PLUGIN_CATALOG[pluginID];
+			const pluginConfig = PLUGIN_CONFIGS[pluginID];
+
+			if(pluginConfig.CONFIG.dependencies) {
+				Object.assign(deps, pluginConfig.CONFIG.dependencies || {});
+			}
+		}
+		await installDeps(deps);
+
+		PLUGIN_REQUIRE = Module.createRequire(
+				path.resolve("./plugins/package.json")
+			);
+
+		console.log("\n\x1b[32m%s\x1b[0m","Plugin Dependecies installed and Loaded");
+	},
 
     //Loading all Plugins and its Services
     activatePlugins: async function(broker) {
@@ -59,25 +94,6 @@ module.exports = {
             const pluginConfig = PLUGIN_CATALOG[pluginID];
 
             //To Activate below files + other services
-			var logiksConfig = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/logiks.json`;
-			if(!fs.existsSync(logiksConfig)) {
-				delete PLUGIN_CATALOG[pluginID];
-				log_error(`Plugin not loaded ${pluginID} due to missing config - logiks.json`);
-				continue;
-			}
-			try {
-				const tempConfig = JSON.parse(fs.readFileSync(logiksConfig, "utf8"));
-				logiksConfig = tempConfig;
-			} catch(e) {
-				delete PLUGIN_CATALOG[pluginID];
-				log_error(`Plugin not loaded ${pluginID} due to corrupt config - logiks.json`, e);
-				continue;
-			}
-			PLUGIN_CONFIGS[pluginID] = {
-				"CONFIG": logiksConfig,
-				"CATALOG": pluginConfig
-			};
-
 			console.log("\x1b[33m%s\x1b[0m", `Activating Plugin - ${pluginID}`);
 
 			//api
@@ -112,20 +128,45 @@ module.exports = {
                 });
             }
         }
-
         console.log("\n\x1b[34m%s\x1b[0m", "All Plugins Loaded and Activated");
     }
-
 }
 
 async function loadPluginCatalog(plugins) {
-  for (const pluginObj of plugins) {
-    const pluginName = pluginObj.name;
+  	for (const pluginObj of plugins) {
+    	const pluginName = pluginObj.name;
 
-    PLUGIN_CATALOG[pluginName] = await catalogPlugins(
-      LOGIKS_CONFIG.ROOT_PATH + `/plugins/${pluginName}/`
-    );
-  }
+		if(["node_modules", "package-lock.json", "package.json"].includes(pluginName)) continue;
+		if(["z", "x", "y"].includes(pluginName.split("_")[0])) continue;
+
+		var logiksConfig = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginName}/logiks.json`;
+		if(!fs.existsSync(logiksConfig)) {
+			// delete PLUGIN_CATALOG[pluginName];
+			console.log("\n\x1b[31m%s\x1b[0m", `Plugin not loaded ${pluginName} due to missing config - logiks.json`);
+			continue;
+		}
+
+		//Load Logiks.json
+		try {
+			const tempConfig = JSON.parse(fs.readFileSync(logiksConfig, "utf8"));
+			logiksConfig = tempConfig;
+		} catch(e) {
+			// delete PLUGIN_CATALOG[pluginName];
+			console.log("\n\x1b[31m%s\x1b[0m", `Plugin not loaded ${pluginName} due to corrupt config - logiks.json`, e);
+			continue;
+		}
+
+
+    	PLUGIN_CATALOG[pluginName] = await catalogPlugins(
+      		LOGIKS_CONFIG.ROOT_PATH + `/plugins/${pluginName}/`
+    	);
+		const pluginConfig = PLUGIN_CATALOG[pluginName];
+		
+		PLUGIN_CONFIGS[pluginName] = {
+			"CONFIG": logiksConfig,
+			"CATALOG": pluginConfig
+		};
+  	}
 }
 
 async function catalogPlugins(dirPath, depth = 0, returnTree = false) {
@@ -504,4 +545,24 @@ function generateController(controllerID, controllerConfig) {
     });
 
     return newController;
+}
+
+async function installDeps(deps) {
+	if(deps['core']) delete deps['core'];
+
+	const pkg = {
+		name: "plugin-runtime",
+		private: true,
+		dependencies: deps
+	};
+
+	fs.writeFileSync(
+		"./plugins/package.json",
+		JSON.stringify(pkg, null, 2)
+	);
+
+	execSync("npm install --only=prod", {
+		cwd: "./plugins",
+		stdio: "inherit"
+	});
 }
