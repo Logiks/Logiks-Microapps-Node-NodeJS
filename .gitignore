@@ -9,6 +9,7 @@ zold/
 
 package-lock.json
 plugins/*
+assets/*
 
 ecosystem.config.js
 notes.txt

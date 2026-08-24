@@ -398,6 +398,41 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		}
 	}
 
+	serviceSchema.actions["assets"] = {
+		rest: {
+			method: "GET",
+			path: "/assets"
+		},
+		params: {
+			file: "string",
+			folder: "string",
+		},
+		async handler(ctx) {
+			var ext = ctx.params.file.split(".");
+			ext = ext[ext.length-1];
+
+			if(ctx.params.folder && ctx.params.folder.length>0) {
+				const sourceFile = `assets/${ctx.params.folder}/${ctx.params.file}`;
+			
+				if(fs.existsSync(sourceFile)) {
+					var sourceData = fs.readFileSync(sourceFile, "utf8");
+					return sourceData;
+				} else {
+					return "";
+				}
+			} else {
+				const sourceFile = `assets/${ctx.params.file}`;
+			
+				if(fs.existsSync(sourceFile)) {
+					var sourceData = fs.readFileSync(sourceFile, "utf8");
+					return sourceData;
+				} else {
+					return "";
+				}
+			}
+		}
+	}
+
 	serviceSchema.actions["config"] = {
 		params: {
 			paramId: "string",
